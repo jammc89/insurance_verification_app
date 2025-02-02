@@ -7,7 +7,7 @@ import { Input } from './ui/input';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from './ui/alert';
 
-const InsuranceVerificationApp = () => {
+export const InsuranceVerificationApp = () => {
   const [patientInfo, setPatientInfo] = useState({
     firstName: '',
     lastName: '',
