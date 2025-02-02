@@ -1,6 +1,6 @@
 'use client';
 
-import InsuranceVerificationApp from '../components/InsuranceVerificationApp.js';
+import InsuranceVerificationApp from '../components/InsuranceVerificationApp';
 
 export default function Home() {
   return (
