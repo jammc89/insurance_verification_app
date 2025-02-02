@@ -1,6 +1,6 @@
 'use client';
 
-import { InsuranceVerificationApp } from './InsuranceVerificationApp';
+import InsuranceVerificationApp from './InsuranceVerificationApp';
 
 export default function Home() {
   return (
