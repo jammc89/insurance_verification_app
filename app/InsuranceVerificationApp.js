@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert';
+import VerificationResults from '../components/VerificationResults';
 
 export const InsuranceVerificationApp = () => {
   const [patientInfo, setPatientInfo] = useState({
@@ -34,34 +35,7 @@ export const InsuranceVerificationApp = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock response
-      const result = {
-        status: 'ACTIVE',
-        coverage: {
-          type: 'PPO',
-          effectiveDate: '2024-01-01',
-          endDate: '2024-12-31',
-          deductible: {
-            individual: 50,
-            remaining: 50
-          },
-          maximumBenefit: {
-            annual: 1500,
-            remaining: 1500
-          },
-          procedures: {
-            'D3330': {
-              name: 'Endodontic Therapy (Molar)',
-              coverage: '80%',
-              patientPortion: '20%'
-            }
-          }
-        },
-        lastVerified: new Date().toISOString()
-      };
-      
-      setVerificationResult(result);
+      setVerificationResult({}); // This will trigger the VerificationResults component to show
     } catch (error) {
       console.error('Verification failed:', error);
       setVerificationResult({ error: 'Verification failed. Please try again.' });
@@ -149,64 +123,7 @@ export const InsuranceVerificationApp = () => {
       </Card>
 
       {verificationResult && !verificationResult.error && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Verification Results</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-medium">Coverage Status</h3>
-                <p className="text-green-600 font-semibold">{verificationResult.status}</p>
-              </div>
-              <div>
-                <h3 className="font-medium">Plan Type</h3>
-                <p>{verificationResult.coverage.type}</p>
-              </div>
-              <div>
-                <h3 className="font-medium">Effective Date</h3>
-                <p>{verificationResult.coverage.effectiveDate}</p>
-              </div>
-              <div>
-                <h3 className="font-medium">End Date</h3>
-                <p>{verificationResult.coverage.endDate}</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-medium mb-2">Benefits</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm">Individual Deductible</p>
-                  <p className="font-semibold">${verificationResult.coverage.deductible.individual}</p>
-                  <p className="text-sm text-gray-600">Remaining: ${verificationResult.coverage.deductible.remaining}</p>
-                </div>
-                <div>
-                  <p className="text-sm">Annual Maximum</p>
-                  <p className="font-semibold">${verificationResult.coverage.maximumBenefit.annual}</p>
-                  <p className="text-sm text-gray-600">Remaining: ${verificationResult.coverage.maximumBenefit.remaining}</p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-medium mb-2">Procedure Coverage</h3>
-              {Object.entries(verificationResult.coverage.procedures).map(([code, info]) => (
-                <div key={code} className="bg-gray-50 p-3 rounded">
-                  <p className="font-medium">{info.name} ({code})</p>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    <p className="text-sm">Insurance Covers: {info.coverage}</p>
-                    <p className="text-sm">Patient Portion: {info.patientPortion}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-sm text-gray-500">
-              Last verified: {new Date(verificationResult.lastVerified).toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+        <VerificationResults verificationResult={verificationResult} />
       )}
 
       {verificationResult?.error && (
