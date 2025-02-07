@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Alert, AlertTitle, AlertDescription } from './ui/alert';
+import CostCalculator from './CostCalculator';
 
 const mockVerificationData = {
     status: 'ACTIVE',
@@ -220,6 +221,12 @@ const VerificationResults = ({ verificationResult }) => {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Cost Calculator */}
+            <div className="border-t border-gray-200 pt-6">
+              <h2 className="text-2xl font-bold mb-4">Treatment Cost Calculator</h2>
+              <CostCalculator insuranceData={mockVerificationData} />
+            </div>
 
             <div className="text-sm text-gray-500">
                 Last verified: {new Date(mockVerificationData.history.lastVerification).toLocaleString()}
