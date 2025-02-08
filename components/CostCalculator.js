@@ -29,10 +29,7 @@ const defaultInsuranceData = {
   }
 };
 
-const CostCalculator = ({ insuranceData }) => {
-  // Ensure we have valid insurance data
-  const safeInsuranceData = insuranceData?.benefits ? insuranceData : defaultInsuranceData;
-
+const CostCalculator = ({ insuranceData = defaultInsuranceData }) => {
   const [selectedProcedures, setSelectedProcedures] = useState([]);
   const [totals, setTotals] = useState({
     totalFees: 0,
@@ -41,7 +38,6 @@ const CostCalculator = ({ insuranceData }) => {
     deductibleApplied: 0
   });
 
-  // Calculate totals whenever selected procedures change
   useEffect(() => {
     try {
       let totalFees = 0;
@@ -49,35 +45,26 @@ const CostCalculator = ({ insuranceData }) => {
       let patientPays = 0;
       let deductibleApplied = 0;
       
-      // Get insurance details with fallbacks
-      let deductibleRemaining = safeInsuranceData?.benefits?.deductible?.remaining ?? 50;
-      let maxBenefitRemaining = safeInsuranceData?.benefits?.maximums?.remaining ?? 1500;
+      let deductibleRemaining = insuranceData?.benefits?.deductible?.remaining ?? 50;
+      let maxBenefitRemaining = insuranceData?.benefits?.maximums?.remaining ?? 1500;
 
-      // Calculate costs for each selected procedure
       selectedProcedures.forEach(code => {
-        // Get procedure fee with fallback
         let fee = feeSchedule[code]?.fee ?? 0;
         totalFees += fee;
 
-        // Apply deductible if remaining
         if (deductibleRemaining > 0) {
-          const deductibleForThisProcedure = Math.min(deductibleRemaining, fee);
-          deductibleApplied += deductibleForThisProcedure;
-          deductibleRemaining -= deductibleForThisProcedure;
-          fee -= deductibleForThisProcedure;
+          let deductibleForThis = Math.min(deductibleRemaining, fee);
+          deductibleApplied += deductibleForThis;
+          deductibleRemaining -= deductibleForThis;
+          fee -= deductibleForThis;
         }
 
-        // Calculate insurance coverage (80% standard)
-        const coverageRate = 0.8;
-        const insurancePortionForProcedure = fee * coverageRate;
-        const actualInsurancePays = Math.min(insurancePortionForProcedure, maxBenefitRemaining);
-        
-        insurancePays += actualInsurancePays;
-        maxBenefitRemaining -= actualInsurancePays;
-        patientPays += fee - actualInsurancePays + deductibleForThisProcedure;
+        let insuranceForThis = Math.min(fee * 0.8, maxBenefitRemaining);
+        insurancePays += insuranceForThis;
+        maxBenefitRemaining -= insuranceForThis;
+        patientPays += (fee - insuranceForThis + deductibleForThis);
       });
 
-      // Update state with calculated totals
       setTotals({
         totalFees: Math.round(totalFees),
         insurancePays: Math.round(insurancePays),
@@ -86,7 +73,6 @@ const CostCalculator = ({ insuranceData }) => {
       });
     } catch (error) {
       console.error('Error calculating costs:', error);
-      // Reset totals on error
       setTotals({
         totalFees: 0,
         insurancePays: 0,
@@ -94,7 +80,7 @@ const CostCalculator = ({ insuranceData }) => {
         deductibleApplied: 0
       });
     }
-  }, [selectedProcedures, safeInsuranceData]);
+  }, [selectedProcedures, insuranceData]);
 
   const handleProcedureToggle = (code) => {
     setSelectedProcedures(prev => {
