@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';  // Added useState import
 import CostCalculator from './CostCalculator';
 
 const mockVerificationData = {
