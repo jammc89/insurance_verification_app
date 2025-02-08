@@ -31,39 +31,29 @@ const CostCalculator = ({ insuranceData = {} }) => {
     deductibleApplied: 0
   });
 
-  useEffect(() => {
-    calculateTotals();
-  }, [selectedProcedures]);
-
   const calculateTotals = () => {
     let totalFees = 0;
     let insurancePays = 0;
     let patientPays = 0;
     let deductibleApplied = 0;
-    
-    let deductibleRemaining = insuranceData?.benefits?.deductible?.remaining || 50;
-    let maxBenefitRemaining = insuranceData?.benefits?.maximums?.remaining || 1500;
+    let deductibleRemaining = (insuranceData?.benefits?.deductible?.remaining || 50);
+    let maxBenefitRemaining = (insuranceData?.benefits?.maximums?.remaining || 1500);
 
-    selectedProcedures.forEach(procedureCode => {
-      const fee = feeSchedule[procedureCode]?.fee || 0;
-      let procedureFeeAfterDeductible = fee;
-      
-      // Apply deductible if remaining
+    selectedProcedures.forEach(code => {
+      let fee = feeSchedule[code]?.fee || 0;
+      totalFees += fee;
+
       if (deductibleRemaining > 0) {
-        const deductibleForThisProcedure = Math.min(deductibleRemaining, fee);
-        deductibleApplied += deductibleForThisProcedure;
-        deductibleRemaining -= deductibleForThisProcedure;
-        procedureFeeAfterDeductible -= deductibleForThisProcedure;
+        let deductibleForThis = Math.min(deductibleRemaining, fee);
+        deductibleApplied += deductibleForThis;
+        deductibleRemaining -= deductibleForThis;
+        fee -= deductibleForThis;
       }
 
-      // Calculate insurance portion (80% coverage)
-      const insurancePortionForProcedure = procedureFeeAfterDeductible * 0.8;
-      const actualInsurancePays = Math.min(insurancePortionForProcedure, maxBenefitRemaining);
-      
-      insurancePays += actualInsurancePays;
-      maxBenefitRemaining -= actualInsurancePays;
-      patientPays += (fee - actualInsurancePays);
-      totalFees += fee;
+      let insuranceForThis = Math.min(fee * 0.8, maxBenefitRemaining);
+      insurancePays += insuranceForThis;
+      maxBenefitRemaining -= insuranceForThis;
+      patientPays += (fee + deductibleApplied - insuranceForThis);
     });
 
     setTotals({
@@ -74,13 +64,16 @@ const CostCalculator = ({ insuranceData = {} }) => {
     });
   };
 
+  useEffect(() => {
+    calculateTotals();
+  }, [selectedProcedures]);
+
   const handleProcedureToggle = (code) => {
     setSelectedProcedures(prev => {
       if (prev.includes(code)) {
         return prev.filter(p => p !== code);
-      } else {
-        return [...prev, code];
       }
+      return [...prev, code];
     });
   };
 
