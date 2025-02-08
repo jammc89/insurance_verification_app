@@ -1,14 +1,16 @@
-import './globals.css'
+'use client';
 
-export const metadata = {
-  title: 'Insurance Verification App',
-  description: 'Dental insurance verification made simple',
-}
+import { AuthProvider } from './auth/AuthContext';
+import './globals.css';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
-  )
+  );
 }
