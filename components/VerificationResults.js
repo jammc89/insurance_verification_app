@@ -223,9 +223,8 @@ const VerificationResults = ({ verificationResult }) => {
             </Card>
 
             {/* Cost Calculator */}
-            <div className="border-t border-gray-200 pt-6">
-              <h2 className="text-2xl font-bold mb-4">Treatment Cost Calculator</h2>
-              <CostCalculator insuranceData={mockVerificationData} />
+            <div className="mt-6">
+                <CostCalculator insuranceData={mockVerificationData} />
             </div>
 
             <div className="text-sm text-gray-500">
