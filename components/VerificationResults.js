@@ -3,7 +3,102 @@
 import React, { useState } from 'react';
 import CostCalculator from './CostCalculator';
 
-const VerificationResults = ({ verificationResult }) => {
+const mockVerificationData = {
+    status: 'ACTIVE',
+    effectiveDate: '2024-01-01',
+    terminationDate: '2024-12-31',
+    network: {
+        status: 'IN-NETWORK',
+        type: 'PPO',
+        networkName: 'Premium Dental Network'
+    },
+    planDetails: {
+        planName: 'Premium Dental PPO',
+        group: '12345-001',
+        planYear: 'Calendar Year',
+        claimAddress: 'PO Box 12345, Some City, ST 12345'
+    },
+    benefits: {
+        deductible: {
+            individual: 50,
+            family: 150,
+            remaining: 50,
+            applies_to_treatment: true
+        },
+        maximums: {
+            annual: 1500,
+            remaining: 1500,
+            orthodontic_lifetime: 1000
+        },
+        preventive: {
+            coverage: '100%',
+            deductible_applies: false,
+            waiting_period: 'None'
+        }
+    },
+    endodonticCoverage: {
+        basic: {
+            coverage: '80%',
+            deductible_applies: true,
+            waiting_period: 'None',
+            frequency: 'Once per tooth per lifetime'
+        },
+        procedures: {
+            'D3310': {
+                name: 'Anterior Root Canal',
+                coverage: '80%',
+                patient_portion: '20%',
+                restrictions: 'None'
+            },
+            'D3320': {
+                name: 'Premolar Root Canal',
+                coverage: '80%',
+                patient_portion: '20%',
+                restrictions: 'None'
+            },
+            'D3330': {
+                name: 'Molar Root Canal',
+                coverage: '80%',
+                patient_portion: '20%',
+                restrictions: 'None'
+            },
+            'D3346': {
+                name: 'Retreatment - Anterior',
+                coverage: '80%',
+                patient_portion: '20%',
+                restrictions: '2 years after initial treatment'
+            },
+            'D3347': {
+                name: 'Retreatment - Premolar',
+                coverage: '80%',
+                patient_portion: '20%',
+                restrictions: '2 years after initial treatment'
+            },
+            'D3348': {
+                name: 'Retreatment - Molar',
+                coverage: '80%',
+                patient_portion: '20%',
+                restrictions: '2 years after initial treatment'
+            }
+        }
+    },
+    history: {
+        lastVerification: new Date().toISOString(),
+        tooth_history: {
+            '18': { 
+                date: '2023-06-15',
+                procedure: 'D3330',
+                provider: 'Dr. Smith'
+            }
+        }
+    },
+    warnings: [
+        'Tooth 18 had previous root canal treatment in 2023',
+        'Retreatment waiting period applies'
+    ]
+};
+
+const VerificationResults = ({ verificationResult = mockVerificationData }) => {
     const [sections, setSections] = useState({
         planInfo: true,
         benefits: true,
@@ -17,12 +112,6 @@ const VerificationResults = ({ verificationResult }) => {
             ...prev,
             [section]: !prev[section]
         }));
-    };
-
-    // Safe access to nested properties
-    const getNestedValue = (obj, path, defaultValue = 'N/A') => {
-        return path.split('.').reduce((current, key) => 
-            current && current[key] !== undefined ? current[key] : defaultValue, obj);
     };
 
     if (!verificationResult) return null;
@@ -46,22 +135,22 @@ const VerificationResults = ({ verificationResult }) => {
                             <div>
                                 <h3 className="font-medium">Status</h3>
                                 <p className="text-green-600 font-semibold">
-                                    {getNestedValue(verificationResult, 'status')}
+                                    {verificationResult?.status || 'Unknown'}
                                 </p>
                             </div>
                             <div>
                                 <h3 className="font-medium">Network Status</h3>
                                 <p className="text-blue-600">
-                                    {getNestedValue(verificationResult, 'network.status')}
+                                    {verificationResult?.network?.status || 'Unknown'}
                                 </p>
                             </div>
                             <div>
                                 <h3 className="font-medium">Plan Type</h3>
-                                <p>{getNestedValue(verificationResult, 'network.type')}</p>
+                                <p>{verificationResult?.network?.type || 'Unknown'}</p>
                             </div>
                             <div>
                                 <h3 className="font-medium">Plan Year</h3>
-                                <p>{getNestedValue(verificationResult, 'planDetails.planYear')}</p>
+                                <p>{verificationResult?.planDetails?.planYear || 'Unknown'}</p>
                             </div>
                         </div>
                     </div>
@@ -69,13 +158,12 @@ const VerificationResults = ({ verificationResult }) => {
             </div>
 
             {/* Warnings */}
-            {verificationResult.warnings?.map((warning, index) => (
+            {verificationResult?.warnings?.map((warning, index) => (
                 <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
                     <h3 className="font-medium text-red-800">Important</h3>
                     <p className="text-red-700">{warning}</p>
                 </div>
             ))}
-
             {/* Benefits */}
             <div className="bg-white rounded-lg shadow-sm border">
                 <div className="p-4 flex justify-between items-center border-b">
@@ -94,19 +182,19 @@ const VerificationResults = ({ verificationResult }) => {
                                 <div>
                                     <h3 className="font-medium">Individual Deductible</h3>
                                     <p className="font-semibold">
-                                        ${getNestedValue(verificationResult, 'benefits.deductible.individual', 0)}
+                                        ${verificationResult?.benefits?.deductible?.individual || 0}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                        Remaining: ${getNestedValue(verificationResult, 'benefits.deductible.remaining', 0)}
+                                        Remaining: ${verificationResult?.benefits?.deductible?.remaining || 0}
                                     </p>
                                 </div>
                                 <div>
                                     <h3 className="font-medium">Annual Maximum</h3>
                                     <p className="font-semibold">
-                                        ${getNestedValue(verificationResult, 'benefits.maximums.annual', 0)}
+                                        ${verificationResult?.benefits?.maximums?.annual || 0}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                        Remaining: ${getNestedValue(verificationResult, 'benefits.maximums.remaining', 0)}
+                                        Remaining: ${verificationResult?.benefits?.maximums?.remaining || 0}
                                     </p>
                                 </div>
                             </div>
@@ -126,22 +214,22 @@ const VerificationResults = ({ verificationResult }) => {
                         {sections.endodontic ? '−' : '+'}
                     </button>
                 </div>
-                {sections.endodontic && verificationResult.endodonticCoverage && (
+                {sections.endodontic && verificationResult?.endodonticCoverage && (
                     <div className="p-6">
                         <div className="space-y-4">
                             <div className="bg-gray-50 p-4 rounded">
                                 <h3 className="font-medium mb-2">Basic Endodontic Coverage</h3>
-                                <p>Coverage: {getNestedValue(verificationResult, 'endodonticCoverage.basic.coverage')}</p>
+                                <p>Coverage: {verificationResult?.endodonticCoverage?.basic?.coverage || 'Unknown'}</p>
                                 <p>Deductible Applies: {
-                                    getNestedValue(verificationResult, 'endodonticCoverage.basic.deductible_applies') ? 'Yes' : 'No'
+                                    verificationResult?.endodonticCoverage?.basic?.deductible_applies ? 'Yes' : 'No'
                                 }</p>
-                                <p>Waiting Period: {getNestedValue(verificationResult, 'endodonticCoverage.basic.waiting_period')}</p>
-                                <p>Frequency: {getNestedValue(verificationResult, 'endodonticCoverage.basic.frequency')}</p>
+                                <p>Waiting Period: {verificationResult?.endodonticCoverage?.basic?.waiting_period || 'Unknown'}</p>
+                                <p>Frequency: {verificationResult?.endodonticCoverage?.basic?.frequency || 'Unknown'}</p>
                             </div>
 
                             <h3 className="font-medium mt-4 mb-2">Procedure Coverage</h3>
                             <div className="grid gap-4">
-                                {Object.entries(verificationResult.endodonticCoverage.procedures || {}).map(([code, info]) => (
+                                {Object.entries(verificationResult?.endodonticCoverage?.procedures || {}).map(([code, info]) => (
                                     <div key={code} className="bg-gray-50 p-4 rounded">
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -162,7 +250,6 @@ const VerificationResults = ({ verificationResult }) => {
                     </div>
                 )}
             </div>
-
             {/* Treatment History */}
             <div className="bg-white rounded-lg shadow-sm border">
                 <div className="p-4 flex justify-between items-center border-b">
@@ -174,7 +261,7 @@ const VerificationResults = ({ verificationResult }) => {
                         {sections.history ? '−' : '+'}
                     </button>
                 </div>
-                {sections.history && verificationResult.history?.tooth_history && (
+                {sections.history && verificationResult?.history?.tooth_history && (
                     <div className="p-6">
                         <div className="space-y-4">
                             {Object.entries(verificationResult.history.tooth_history).map(([tooth, info]) => (
@@ -208,4 +295,15 @@ const VerificationResults = ({ verificationResult }) => {
                 )}
             </div>
 
-            <div classNa
+            <div className="text-sm text-gray-500">
+                Last verified: {
+                    verificationResult?.history?.lastVerification ? 
+                    new Date(verificationResult.history.lastVerification).toLocaleString() : 
+                    'Unknown'
+                }
+            </div>
+        </div>
+    );
+};
+
+export default VerificationResults;
