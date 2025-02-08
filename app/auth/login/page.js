@@ -101,6 +101,15 @@ const LoginPage = () => {
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
+
+            <div className="mt-4 text-center">
+              <a 
+                href="/auth/forgot-password" 
+                className="text-sm text-blue-600 hover:text-blue-500"
+              >
+                Forgot your password?
+              </a>
+            </div>
           </form>
         </div>
       </div>
