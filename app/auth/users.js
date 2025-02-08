@@ -1,10 +1,8 @@
-'use client';
-
-// Temporary user data store (in production this would be in a secure database)
+// Temporary user data store (for development only)
 export const VALID_USERS = [
   {
     email: 'admin@example.com',
-    password: 'admin123', // In production, this would be hashed
+    password: 'admin123', // In production, passwords should be hashed!
     role: 'admin'
   },
   {
