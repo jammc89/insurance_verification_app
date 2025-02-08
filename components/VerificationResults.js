@@ -1,6 +1,4 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { Alert, AlertTitle, AlertDescription } from './ui/alert';
 import CostCalculator from './CostCalculator';
 
 const mockVerificationData = {
@@ -104,11 +102,11 @@ const VerificationResults = ({ verificationResult }) => {
     return (
         <div className="space-y-6">
             {/* Basic Information */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Plan Information</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold">Plan Information</h2>
+                </div>
+                <div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <h3 className="font-medium">Status</h3>
@@ -127,23 +125,23 @@ const VerificationResults = ({ verificationResult }) => {
                             <p>{mockVerificationData.planDetails.planYear}</p>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             {/* Warnings */}
             {mockVerificationData.warnings.map((warning, index) => (
-                <Alert key={index} variant="destructive">
-                    <AlertTitle>Important</AlertTitle>
-                    <AlertDescription>{warning}</AlertDescription>
-                </Alert>
+                <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 className="font-medium text-red-800">Important</h3>
+                    <p className="text-red-700">{warning}</p>
+                </div>
             ))}
 
             {/* Benefits */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Benefits & Maximums</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold">Benefits & Maximums</h2>
+                </div>
+                <div>
                     <div className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -162,15 +160,15 @@ const VerificationResults = ({ verificationResult }) => {
                             </div>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             {/* Endodontic Coverage */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Endodontic Coverage</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold">Endodontic Coverage</h2>
+                </div>
+                <div>
                     <div className="space-y-4">
                         <div className="bg-gray-50 p-4 rounded">
                             <h3 className="font-medium mb-2">Basic Endodontic Coverage</h3>
@@ -200,15 +198,15 @@ const VerificationResults = ({ verificationResult }) => {
                             ))}
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             {/* Treatment History */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Treatment History</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold">Treatment History</h2>
+                </div>
+                <div>
                     <div className="space-y-4">
                         {Object.entries(mockVerificationData.history.tooth_history).map(([tooth, info]) => (
                             <div key={tooth} className="bg-gray-50 p-4 rounded">
@@ -219,8 +217,8 @@ const VerificationResults = ({ verificationResult }) => {
                             </div>
                         ))}
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             {/* Cost Calculator */}
             <div className="mt-6">
