@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for user session on load
+    // Check for an existing user session in sessionStorage
     const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -30,8 +30,17 @@ export const AuthProvider = ({ children }) => {
     router.push('/auth/login');
   };
 
+  // Helper function to check if the user has the required role
+  const hasRole = (requiredRole) => {
+    if (!user) return false;
+    if (Array.isArray(requiredRole)) {
+      return requiredRole.includes(user.role);
+    }
+    return user.role === requiredRole;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, hasRole }}>
       {children}
     </AuthContext.Provider>
   );
