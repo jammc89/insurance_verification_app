@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';  // Added useState import
+import React, { useState } from 'react';
 import CostCalculator from './CostCalculator';
 
 const mockVerificationData = {
@@ -98,7 +98,7 @@ const mockVerificationData = {
     ]
 };
 
-const VerificationResults = ({ verificationResult }) => {
+const VerificationResults = ({ verificationResult = mockVerificationData }) => {
     const [sections, setSections] = useState({
         planInfo: true,
         benefits: true,
@@ -113,8 +113,6 @@ const VerificationResults = ({ verificationResult }) => {
             [section]: !prev[section]
         }));
     };
-
-    if (!verificationResult) return null;
 
     return (
         <div className="space-y-6">
@@ -134,19 +132,19 @@ const VerificationResults = ({ verificationResult }) => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <h3 className="font-medium">Status</h3>
-                                <p className="text-green-600 font-semibold">{mockVerificationData.status}</p>
+                                <p className="text-green-600 font-semibold">{verificationResult.status}</p>
                             </div>
                             <div>
                                 <h3 className="font-medium">Network Status</h3>
-                                <p className="text-blue-600">{mockVerificationData.network.status}</p>
+                                <p className="text-blue-600">{verificationResult.network.status}</p>
                             </div>
                             <div>
                                 <h3 className="font-medium">Plan Type</h3>
-                                <p>{mockVerificationData.network.type}</p>
+                                <p>{verificationResult.network.type}</p>
                             </div>
                             <div>
                                 <h3 className="font-medium">Plan Year</h3>
-                                <p>{mockVerificationData.planDetails.planYear}</p>
+                                <p>{verificationResult.planDetails.planYear}</p>
                             </div>
                         </div>
                     </div>
@@ -154,7 +152,7 @@ const VerificationResults = ({ verificationResult }) => {
             </div>
 
             {/* Warnings */}
-            {mockVerificationData.warnings.map((warning, index) => (
+            {verificationResult.warnings.map((warning, index) => (
                 <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
                     <h3 className="font-medium text-red-800">Important</h3>
                     <p className="text-red-700">{warning}</p>
@@ -178,16 +176,16 @@ const VerificationResults = ({ verificationResult }) => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <h3 className="font-medium">Individual Deductible</h3>
-                                    <p className="font-semibold">${mockVerificationData.benefits.deductible.individual}</p>
+                                    <p className="font-semibold">${verificationResult.benefits.deductible.individual}</p>
                                     <p className="text-sm text-gray-600">
-                                        Remaining: ${mockVerificationData.benefits.deductible.remaining}
+                                        Remaining: ${verificationResult.benefits.deductible.remaining}
                                     </p>
                                 </div>
                                 <div>
                                     <h3 className="font-medium">Annual Maximum</h3>
-                                    <p className="font-semibold">${mockVerificationData.benefits.maximums.annual}</p>
+                                    <p className="font-semibold">${verificationResult.benefits.maximums.annual}</p>
                                     <p className="text-sm text-gray-600">
-                                        Remaining: ${mockVerificationData.benefits.maximums.remaining}
+                                        Remaining: ${verificationResult.benefits.maximums.remaining}
                                     </p>
                                 </div>
                             </div>
@@ -212,15 +210,15 @@ const VerificationResults = ({ verificationResult }) => {
                         <div className="space-y-4">
                             <div className="bg-gray-50 p-4 rounded">
                                 <h3 className="font-medium mb-2">Basic Endodontic Coverage</h3>
-                                <p>Coverage: {mockVerificationData.endodonticCoverage.basic.coverage}</p>
-                                <p>Deductible Applies: {mockVerificationData.endodonticCoverage.basic.deductible_applies ? 'Yes' : 'No'}</p>
-                                <p>Waiting Period: {mockVerificationData.endodonticCoverage.basic.waiting_period}</p>
-                                <p>Frequency: {mockVerificationData.endodonticCoverage.basic.frequency}</p>
+                                <p>Coverage: {verificationResult.endodonticCoverage.basic.coverage}</p>
+                                <p>Deductible Applies: {verificationResult.endodonticCoverage.basic.deductible_applies ? 'Yes' : 'No'}</p>
+                                <p>Waiting Period: {verificationResult.endodonticCoverage.basic.waiting_period}</p>
+                                <p>Frequency: {verificationResult.endodonticCoverage.basic.frequency}</p>
                             </div>
 
                             <h3 className="font-medium mt-4 mb-2">Procedure Coverage</h3>
                             <div className="grid gap-4">
-                                {Object.entries(mockVerificationData.endodonticCoverage.procedures).map(([code, info]) => (
+                                {Object.entries(verificationResult.endodonticCoverage.procedures).map(([code, info]) => (
                                     <div key={code} className="bg-gray-50 p-4 rounded">
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -256,7 +254,7 @@ const VerificationResults = ({ verificationResult }) => {
                 {sections.history && (
                     <div className="p-6">
                         <div className="space-y-4">
-                            {Object.entries(mockVerificationData.history.tooth_history).map(([tooth, info]) => (
+                            {Object.entries(verificationResult.history.tooth_history).map(([tooth, info]) => (
                                 <div key={tooth} className="bg-gray-50 p-4 rounded">
                                     <p className="font-medium">Tooth {tooth}</p>
                                     <p className="text-sm">Procedure: {info.procedure}</p>
@@ -282,13 +280,13 @@ const VerificationResults = ({ verificationResult }) => {
                 </div>
                 {sections.calculator && (
                     <div className="p-6">
-                        <CostCalculator insuranceData={mockVerificationData} />
+                        <CostCalculator insuranceData={verificationResult} />
                     </div>
                 )}
             </div>
 
             <div className="text-sm text-gray-500">
-                Last verified: {new Date(mockVerificationData.history.lastVerification).toLocaleString()}
+                Last verified: {new Date(verificationResult.history.lastVerification).toLocaleString()}
             </div>
         </div>
     );
