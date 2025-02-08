@@ -23,170 +23,172 @@ const feeSchedule = {
 };
 
 const CostCalculator = ({ insuranceData = {} }) => {
-  const [selectedProcedures, setSelectedProcedures] = useState({});
+  const [selectedProcedures, setSelectedProcedures] = useState([]);
   const [totals, setTotals] = useState({
-    totalFee: 0,
+    totalFees: 0,
     insurancePays: 0,
-    patientPays: 0
+    patientPays: 0,
+    deductibleApplied: 0
   });
 
-  // Calculate insurance coverage and patient responsibility
-  const calculateCosts = () => {
-    let totalFee = 0;
+  useEffect(() => {
+    calculateTotals();
+  }, [selectedProcedures]);
+
+  const calculateTotals = () => {
+    let totalFees = 0;
     let insurancePays = 0;
     let patientPays = 0;
-    let remainingDeductible = insuranceData?.benefits?.deductible?.remaining || 0;
+    let deductibleApplied = 0;
+    
+    let deductibleRemaining = insuranceData?.benefits?.deductible?.remaining || 50;
+    let maxBenefitRemaining = insuranceData?.benefits?.maximums?.remaining || 1500;
 
-    Object.entries(selectedProcedures).forEach(([code, isSelected]) => {
-      if (isSelected) {
-        const procedure = feeSchedule[code];
-        totalFee += procedure.fee;
-
-        // Apply deductible first if applicable
-        if (remainingDeductible > 0) {
-          const deductibleApplied = Math.min(remainingDeductible, procedure.fee);
-          remainingDeductible -= deductibleApplied;
-          patientPays += deductibleApplied;
-
-          // Calculate coverage for remaining amount
-          const amountAfterDeductible = procedure.fee - deductibleApplied;
-          const coveragePercent = 0.8; // Default to 80% if no insurance data
-          insurancePays += amountAfterDeductible * coveragePercent;
-          patientPays += amountAfterDeductible * (1 - coveragePercent);
-        } else {
-          // No deductible to apply
-          const coveragePercent = 0.8; // Default to 80% if no insurance data
-          insurancePays += procedure.fee * coveragePercent;
-          patientPays += procedure.fee * (1 - coveragePercent);
-        }
+    selectedProcedures.forEach(procedureCode => {
+      const fee = feeSchedule[procedureCode]?.fee || 0;
+      let procedureFeeAfterDeductible = fee;
+      
+      // Apply deductible if remaining
+      if (deductibleRemaining > 0) {
+        const deductibleForThisProcedure = Math.min(deductibleRemaining, fee);
+        deductibleApplied += deductibleForThisProcedure;
+        deductibleRemaining -= deductibleForThisProcedure;
+        procedureFeeAfterDeductible -= deductibleForThisProcedure;
       }
+
+      // Calculate insurance portion (80% coverage)
+      const insurancePortionForProcedure = procedureFeeAfterDeductible * 0.8;
+      const actualInsurancePays = Math.min(insurancePortionForProcedure, maxBenefitRemaining);
+      
+      insurancePays += actualInsurancePays;
+      maxBenefitRemaining -= actualInsurancePays;
+      patientPays += (fee - actualInsurancePays);
+      totalFees += fee;
     });
 
     setTotals({
-      totalFee: Math.round(totalFee),
-      insurancePays: Math.round(insurancePays),
-      patientPays: Math.round(patientPays)
+      totalFees,
+      insurancePays,
+      patientPays,
+      deductibleApplied
     });
   };
 
-  // Update calculations when procedures are selected/deselected
-  useEffect(() => {
-    calculateCosts();
-  }, [selectedProcedures]);
-
   const handleProcedureToggle = (code) => {
-    setSelectedProcedures(prev => ({
-      ...prev,
-      [code]: !prev[code]
-    }));
+    setSelectedProcedures(prev => {
+      if (prev.includes(code)) {
+        return prev.filter(p => p !== code);
+      } else {
+        return [...prev, code];
+      }
+    });
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">Treatment Cost Calculator</h2>
-      
-      {/* Procedure Selection */}
-      <div className="space-y-6 mb-6">
-        {/* Initial Visit */}
-        <div>
-          <h3 className="font-medium mb-2">Initial Visit</h3>
-          <div className="space-y-2">
-            {Object.entries(feeSchedule)
-              .filter(([code]) => ['D0160', 'D0460', 'D0367'].includes(code))
-              .map(([code, procedure]) => (
-                <div key={code} className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedProcedures[code] || false}
-                      onChange={() => handleProcedureToggle(code)}
-                      className="rounded"
-                    />
-                    <span>{procedure.description}</span>
-                  </label>
-                  <span className="text-gray-600">${procedure.fee}</span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Treatment */}
-        <div>
-          <h3 className="font-medium mb-2">Treatment</h3>
-          <div className="space-y-2">
-            {Object.entries(feeSchedule)
-              .filter(([code]) => ['D3310', 'D3320', 'D3330'].includes(code))
-              .map(([code, procedure]) => (
-                <div key={code} className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedProcedures[code] || false}
-                      onChange={() => handleProcedureToggle(code)}
-                      className="rounded"
-                    />
-                    <span>{procedure.description}</span>
-                  </label>
-                  <span className="text-gray-600">${procedure.fee}</span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Retreatment */}
-        <div>
-          <h3 className="font-medium mb-2">Retreatment</h3>
-          <div className="space-y-2">
-            {Object.entries(feeSchedule)
-              .filter(([code]) => ['D3346', 'D3347', 'D3348'].includes(code))
-              .map(([code, procedure]) => (
-                <div key={code} className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedProcedures[code] || false}
-                      onChange={() => handleProcedureToggle(code)}
-                      className="rounded"
-                    />
-                    <span>{procedure.description}</span>
-                  </label>
-                  <span className="text-gray-600">${procedure.fee}</span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Build-up */}
-        <div>
-          <h3 className="font-medium mb-2">Additional Procedures</h3>
-          <div className="space-y-2">
-            {Object.entries(feeSchedule)
-              .filter(([code]) => ['D2950'].includes(code))
-              .map(([code, procedure]) => (
-                <div key={code} className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedProcedures[code] || false}
-                      onChange={() => handleProcedureToggle(code)}
-                      className="rounded"
-                    />
-                    <span>{procedure.description}</span>
-                  </label>
-                  <span className="text-gray-600">${procedure.fee}</span>
-                </div>
-              ))}
-          </div>
+    <div className="space-y-6">
+      {/* Initial Visit */}
+      <div>
+        <h3 className="font-medium mb-2">Initial Visit</h3>
+        <div className="space-y-2">
+          {Object.entries(feeSchedule)
+            .filter(([code]) => ['D0160', 'D0460', 'D0367'].includes(code))
+            .map(([code, procedure]) => (
+              <div key={code} className="flex items-center justify-between">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedProcedures.includes(code)}
+                    onChange={() => handleProcedureToggle(code)}
+                    className="rounded"
+                  />
+                  <span>{procedure.description}</span>
+                </label>
+                <span className="text-gray-600">${procedure.fee}</span>
+              </div>
+            ))}
         </div>
       </div>
 
-      {/* Cost Summary */}
+      {/* Treatment */}
+      <div>
+        <h3 className="font-medium mb-2">Treatment</h3>
+        <div className="space-y-2">
+          {Object.entries(feeSchedule)
+            .filter(([code]) => ['D3310', 'D3320', 'D3330'].includes(code))
+            .map(([code, procedure]) => (
+              <div key={code} className="flex items-center justify-between">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedProcedures.includes(code)}
+                    onChange={() => handleProcedureToggle(code)}
+                    className="rounded"
+                  />
+                  <span>{procedure.description}</span>
+                </label>
+                <span className="text-gray-600">${procedure.fee}</span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* Retreatment */}
+      <div>
+        <h3 className="font-medium mb-2">Retreatment</h3>
+        <div className="space-y-2">
+          {Object.entries(feeSchedule)
+            .filter(([code]) => ['D3346', 'D3347', 'D3348'].includes(code))
+            .map(([code, procedure]) => (
+              <div key={code} className="flex items-center justify-between">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedProcedures.includes(code)}
+                    onChange={() => handleProcedureToggle(code)}
+                    className="rounded"
+                  />
+                  <span>{procedure.description}</span>
+                </label>
+                <span className="text-gray-600">${procedure.fee}</span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* Build-up */}
+      <div>
+        <h3 className="font-medium mb-2">Additional Procedures</h3>
+        <div className="space-y-2">
+          {Object.entries(feeSchedule)
+            .filter(([code]) => ['D2950'].includes(code))
+            .map(([code, procedure]) => (
+              <div key={code} className="flex items-center justify-between">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedProcedures.includes(code)}
+                    onChange={() => handleProcedureToggle(code)}
+                    className="rounded"
+                  />
+                  <span>{procedure.description}</span>
+                </label>
+                <span className="text-gray-600">${procedure.fee}</span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* Summary */}
       <div className="border-t pt-4 mt-6">
         <h3 className="font-medium mb-3">Cost Summary</h3>
         <div className="space-y-2">
           <div className="flex justify-between">
-            <span>Total Fee:</span>
-            <span className="font-medium">${totals.totalFee}</span>
+            <span>Total Fees:</span>
+            <span className="font-medium">${totals.totalFees}</span>
+          </div>
+          <div className="flex justify-between text-gray-600">
+            <span>Deductible Applied:</span>
+            <span className="font-medium">${totals.deductibleApplied}</span>
           </div>
           <div className="flex justify-between text-blue-600">
             <span>Insurance Pays:</span>
