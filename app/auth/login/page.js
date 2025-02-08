@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { VALID_USERS } from '../users';
 
 const LoginPage = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,13 +17,21 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // TODO: Add actual authentication
-      console.log('Login attempt:', { email });
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Check credentials against valid users
+      const user = VALID_USERS.find(
+        u => u.email === email && u.password === password
+      );
+
+      if (user) {
+        // Store user session (temporary solution)
+        sessionStorage.setItem('user', JSON.stringify(user));
+        // Redirect to main app
+        router.push('/');
+      } else {
+        setError('Invalid email or password');
+      }
     } catch (error) {
-      setError('Invalid email or password');
+      setError('An error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -34,6 +45,10 @@ const LoginPage = () => {
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               Sign in to your account
             </h2>
+            {/* Add test credentials hint */}
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Test credentials: admin@example.com / admin123
+            </p>
           </div>
 
           <form className="space-y-6 mt-8" onSubmit={handleSubmit}>
