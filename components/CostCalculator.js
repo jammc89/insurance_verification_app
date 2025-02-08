@@ -38,7 +38,7 @@ const CostCalculator = ({ insuranceData = defaultInsuranceData }) => {
     deductibleApplied: 0
   });
 
-  useEffect(() => {
+ useEffect(() => {
     try {
       let totalFees = 0;
       let insurancePays = 0;
@@ -51,18 +51,23 @@ const CostCalculator = ({ insuranceData = defaultInsuranceData }) => {
       selectedProcedures.forEach(code => {
         let fee = feeSchedule[code]?.fee ?? 0;
         totalFees += fee;
+        let currentDeductible = 0;  // Initialize deductible for this procedure
 
+        // Handle deductible
         if (deductibleRemaining > 0) {
-          let deductibleForThis = Math.min(deductibleRemaining, fee);
-          deductibleApplied += deductibleForThis;
-          deductibleRemaining -= deductibleForThis;
-          fee -= deductibleForThis;
+          currentDeductible = Math.min(deductibleRemaining, fee);
+          deductibleApplied += currentDeductible;
+          deductibleRemaining -= currentDeductible;
+          fee -= currentDeductible;
         }
 
+        // Calculate insurance portion
         let insuranceForThis = Math.min(fee * 0.8, maxBenefitRemaining);
         insurancePays += insuranceForThis;
         maxBenefitRemaining -= insuranceForThis;
-        patientPays += (fee - insuranceForThis + deductibleForThis);
+        
+        // Calculate patient portion
+        patientPays += (fee - insuranceForThis + currentDeductible);
       });
 
       setTotals({
