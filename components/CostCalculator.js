@@ -22,7 +22,7 @@ const feeSchedule = {
   'D2950': { description: 'Core Build-up', fee: 250 }
 };
 
-const CostCalculator = ({ insuranceData = {} }) => {
+const CostCalculator = ({ insuranceData }) => {
   const [selectedProcedures, setSelectedProcedures] = useState([]);
   const [totals, setTotals] = useState({
     totalFees: 0,
@@ -31,13 +31,13 @@ const CostCalculator = ({ insuranceData = {} }) => {
     deductibleApplied: 0
   });
 
-  const calculateTotals = () => {
+  useEffect(() => {
     let totalFees = 0;
     let insurancePays = 0;
     let patientPays = 0;
     let deductibleApplied = 0;
-    let deductibleRemaining = (insuranceData?.benefits?.deductible?.remaining || 50);
-    let maxBenefitRemaining = (insuranceData?.benefits?.maximums?.remaining || 1500);
+    let deductibleRemaining = 50; // Default value if insurance data not provided
+    let maxBenefitRemaining = 1500; // Default value if insurance data not provided
 
     selectedProcedures.forEach(code => {
       let fee = feeSchedule[code]?.fee || 0;
@@ -62,10 +62,6 @@ const CostCalculator = ({ insuranceData = {} }) => {
       patientPays,
       deductibleApplied
     });
-  };
-
-  useEffect(() => {
-    calculateTotals();
   }, [selectedProcedures]);
 
   const handleProcedureToggle = (code) => {
