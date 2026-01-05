@@ -99,116 +99,141 @@ const CostCalculator = ({ insuranceData = defaultInsuranceData }) => {
   return (
     <div className="space-y-6">
       {/* Initial Visit */}
-      <div>
-        <h3 className="font-medium mb-2">Initial Visit</h3>
-        <div className="space-y-2">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200">
+        <h3 className="font-bold text-gray-800 mb-4 flex items-center space-x-2">
+          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>Initial Visit</span>
+        </h3>
+        <div className="space-y-3">
           {Object.entries(feeSchedule)
             .filter(([code]) => ['D0160', 'D0460', 'D0367'].includes(code))
             .map(([code, procedure]) => (
-              <div key={code} className="flex items-center justify-between">
-                <label className="flex items-center space-x-2">
+              <div key={code} className="flex items-center justify-between bg-white rounded-lg p-3 hover:shadow-md transition-shadow duration-150">
+                <label className="flex items-center space-x-3 cursor-pointer flex-1">
                   <input
                     type="checkbox"
                     checked={selectedProcedures.includes(code)}
                     onChange={() => handleProcedureToggle(code)}
-                    className="rounded"
+                    className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   />
-                  <span>{procedure.description}</span>
+                  <span className="font-medium text-gray-900">{procedure.description}</span>
                 </label>
-                <span className="text-gray-600">${procedure.fee}</span>
+                <span className="text-gray-700 font-bold ml-3">${procedure.fee}</span>
               </div>
             ))}
         </div>
       </div>
 
       {/* Treatment */}
-      <div>
-        <h3 className="font-medium mb-2">Treatment</h3>
-        <div className="space-y-2">
+      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200">
+        <h3 className="font-bold text-gray-800 mb-4 flex items-center space-x-2">
+          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Treatment</span>
+        </h3>
+        <div className="space-y-3">
           {Object.entries(feeSchedule)
             .filter(([code]) => ['D3310', 'D3320', 'D3330'].includes(code))
             .map(([code, procedure]) => (
-              <div key={code} className="flex items-center justify-between">
-                <label className="flex items-center space-x-2">
+              <div key={code} className="flex items-center justify-between bg-white rounded-lg p-3 hover:shadow-md transition-shadow duration-150">
+                <label className="flex items-center space-x-3 cursor-pointer flex-1">
                   <input
                     type="checkbox"
                     checked={selectedProcedures.includes(code)}
                     onChange={() => handleProcedureToggle(code)}
-                    className="rounded"
+                    className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500 cursor-pointer"
                   />
-                  <span>{procedure.description}</span>
+                  <span className="font-medium text-gray-900">{procedure.description}</span>
                 </label>
-                <span className="text-gray-600">${procedure.fee}</span>
+                <span className="text-gray-700 font-bold ml-3">${procedure.fee}</span>
               </div>
             ))}
         </div>
       </div>
 
       {/* Retreatment */}
-      <div>
-        <h3 className="font-medium mb-2">Retreatment</h3>
-        <div className="space-y-2">
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
+        <h3 className="font-bold text-gray-800 mb-4 flex items-center space-x-2">
+          <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Retreatment</span>
+        </h3>
+        <div className="space-y-3">
           {Object.entries(feeSchedule)
             .filter(([code]) => ['D3346', 'D3347', 'D3348'].includes(code))
             .map(([code, procedure]) => (
-              <div key={code} className="flex items-center justify-between">
-                <label className="flex items-center space-x-2">
+              <div key={code} className="flex items-center justify-between bg-white rounded-lg p-3 hover:shadow-md transition-shadow duration-150">
+                <label className="flex items-center space-x-3 cursor-pointer flex-1">
                   <input
                     type="checkbox"
                     checked={selectedProcedures.includes(code)}
                     onChange={() => handleProcedureToggle(code)}
-                    className="rounded"
+                    className="w-5 h-5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500 cursor-pointer"
                   />
-                  <span>{procedure.description}</span>
+                  <span className="font-medium text-gray-900">{procedure.description}</span>
                 </label>
-                <span className="text-gray-600">${procedure.fee}</span>
+                <span className="text-gray-700 font-bold ml-3">${procedure.fee}</span>
               </div>
             ))}
         </div>
       </div>
 
       {/* Build-up */}
-      <div>
-        <h3 className="font-medium mb-2">Additional Procedures</h3>
-        <div className="space-y-2">
+      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
+        <h3 className="font-bold text-gray-800 mb-4 flex items-center space-x-2">
+          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          <span>Additional Procedures</span>
+        </h3>
+        <div className="space-y-3">
           {Object.entries(feeSchedule)
             .filter(([code]) => ['D2950'].includes(code))
             .map(([code, procedure]) => (
-              <div key={code} className="flex items-center justify-between">
-                <label className="flex items-center space-x-2">
+              <div key={code} className="flex items-center justify-between bg-white rounded-lg p-3 hover:shadow-md transition-shadow duration-150">
+                <label className="flex items-center space-x-3 cursor-pointer flex-1">
                   <input
                     type="checkbox"
                     checked={selectedProcedures.includes(code)}
                     onChange={() => handleProcedureToggle(code)}
-                    className="rounded"
+                    className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500 cursor-pointer"
                   />
-                  <span>{procedure.description}</span>
+                  <span className="font-medium text-gray-900">{procedure.description}</span>
                 </label>
-                <span className="text-gray-600">${procedure.fee}</span>
+                <span className="text-gray-700 font-bold ml-3">${procedure.fee}</span>
               </div>
             ))}
         </div>
       </div>
 
       {/* Summary */}
-      <div className="border-t pt-4 mt-6">
-        <h3 className="font-medium mb-3">Cost Summary</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Total Fees:</span>
-            <span className="font-medium">${totals.totalFees}</span>
+      <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-6 border-2 border-gray-300 shadow-lg">
+        <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center space-x-2">
+          <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span>Cost Summary</span>
+        </h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center bg-white rounded-lg p-3 border border-gray-200">
+            <span className="text-gray-700 font-medium">Total Fees:</span>
+            <span className="text-gray-900 font-bold text-lg">${totals.totalFees}</span>
           </div>
-          <div className="flex justify-between text-gray-600">
-            <span>Deductible Applied:</span>
-            <span className="font-medium">${totals.deductibleApplied}</span>
+          <div className="flex justify-between items-center bg-amber-50 rounded-lg p-3 border border-amber-200">
+            <span className="text-amber-700 font-medium">Deductible Applied:</span>
+            <span className="text-amber-800 font-bold text-lg">${totals.deductibleApplied}</span>
           </div>
-          <div className="flex justify-between text-blue-600">
-            <span>Insurance Pays:</span>
-            <span className="font-medium">${totals.insurancePays}</span>
+          <div className="flex justify-between items-center bg-blue-50 rounded-lg p-3 border border-blue-200">
+            <span className="text-blue-700 font-medium">Insurance Pays:</span>
+            <span className="text-blue-800 font-bold text-lg">${totals.insurancePays}</span>
           </div>
-          <div className="flex justify-between text-green-600">
-            <span>Patient Responsibility:</span>
-            <span className="font-medium">${totals.patientPays}</span>
+          <div className="flex justify-between items-center bg-green-50 rounded-lg p-3 border-2 border-green-400">
+            <span className="text-green-700 font-bold">Patient Responsibility:</span>
+            <span className="text-green-800 font-bold text-xl">${totals.patientPays}</span>
           </div>
         </div>
       </div>
