@@ -136,81 +136,111 @@ export const InsuranceVerificationApp = () => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-4">
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold">Insurance Verification</h2>
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 mt-6">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 backdrop-blur-sm">
+        <div className="mb-6">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Patient Insurance Information</h2>
+          </div>
+          <p className="text-sm text-gray-600 ml-13">Enter patient details to verify insurance coverage</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">First Name</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
               <input
                 name="firstName"
                 value={patientInfo.firstName}
                 onChange={handleInputChange}
                 required
-                className="w-full p-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 placeholder-gray-400 group-hover:border-gray-400"
+                placeholder="John"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Last Name</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
               <input
                 name="lastName"
                 value={patientInfo.lastName}
                 onChange={handleInputChange}
                 required
-                className="w-full p-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 placeholder-gray-400 group-hover:border-gray-400"
+                placeholder="Doe"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Date of Birth</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
               <input
                 name="dateOfBirth"
                 type="date"
                 value={patientInfo.dateOfBirth}
                 onChange={handleInputChange}
                 required
-                className="w-full p-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 group-hover:border-gray-400"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Insurance Provider</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Insurance Provider</label>
               <input
                 name="insuranceProvider"
                 value={patientInfo.insuranceProvider}
                 onChange={handleInputChange}
                 required
-                className="w-full p-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 placeholder-gray-400 group-hover:border-gray-400"
+                placeholder="Blue Cross Blue Shield"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Member ID</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Member ID</label>
               <input
                 name="memberId"
                 value={patientInfo.memberId}
                 onChange={handleInputChange}
                 required
-                className="w-full p-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 placeholder-gray-400 group-hover:border-gray-400"
+                placeholder="ABC123456789"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Group Number</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Group Number <span className="text-gray-400 font-normal">(Optional)</span></label>
               <input
                 name="groupNumber"
                 value={patientInfo.groupNumber}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 placeholder-gray-400 group-hover:border-gray-400"
+                placeholder="12345-001"
               />
             </div>
           </div>
-          <button 
-            type="submit" 
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
-            disabled={isVerifying}
-          >
-            {isVerifying ? 'Verifying...' : 'Verify Insurance'}
-          </button>
+          <div className="pt-4">
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-150 transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2"
+              disabled={isVerifying}
+            >
+              {isVerifying ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Verifying Insurance...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Verify Insurance</span>
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
 
