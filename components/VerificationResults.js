@@ -3,102 +3,82 @@
 import React, { useState } from 'react';
 import CostCalculator from './CostCalculator';
 
-const mockVerificationData = {
-    status: 'ACTIVE',
-    effectiveDate: '2024-01-01',
-    terminationDate: '2024-12-31',
-    network: {
-        status: 'IN-NETWORK',
-        type: 'PPO',
-        networkName: 'Premium Dental Network'
-    },
-    planDetails: {
-        planName: 'Premium Dental PPO',
-        group: '12345-001',
-        planYear: 'Calendar Year',
-        claimAddress: 'PO Box 12345, Some City, ST 12345'
-    },
-    benefits: {
-        deductible: {
-            individual: 50,
-            family: 150,
-            remaining: 50,
-            applies_to_treatment: true
-        },
-        maximums: {
-            annual: 1500,
-            remaining: 1500,
-            orthodontic_lifetime: 1000
-        },
-        preventive: {
-            coverage: '100%',
-            deductible_applies: false,
-            waiting_period: 'None'
-        }
-    },
-    endodonticCoverage: {
-        basic: {
-            coverage: '80%',
-            deductible_applies: true,
-            waiting_period: 'None',
-            frequency: 'Once per tooth per lifetime'
-        },
-        procedures: {
-            'D3310': {
-                name: 'Anterior Root Canal',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: 'None'
-            },
-            'D3320': {
-                name: 'Premolar Root Canal',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: 'None'
-            },
-            'D3330': {
-                name: 'Molar Root Canal',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: 'None'
-            },
-            'D3346': {
-                name: 'Retreatment - Anterior',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: '2 years after initial treatment'
-            },
-            'D3347': {
-                name: 'Retreatment - Premolar',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: '2 years after initial treatment'
-            },
-            'D3348': {
-                name: 'Retreatment - Molar',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: '2 years after initial treatment'
-            }
-        }
-    },
-    history: {
-        lastVerification: new Date().toISOString(),
-        tooth_history: {
-            '18': { 
-                date: '2023-06-15',
-                procedure: 'D3330',
-                provider: 'Dr. Smith'
-            }
-        }
-    },
-    warnings: [
-        'Tooth 18 had previous root canal treatment in 2023',
-        'Retreatment waiting period applies'
-    ]
+const formatCurrency = (value) => `$${Number(value || 0).toLocaleString()}`;
+
+const formatDate = (value) => {
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString();
 };
 
-const VerificationResults = ({ verificationResult = mockVerificationData }) => {
+const titleCase = (value) =>
+    String(value || '')
+        .toLowerCase()
+        .replace(/(^|[\s-])\w/g, (c) => c.toUpperCase());
+
+const Section = ({ title, subtitle, open, onToggle, children }) => (
+    <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <button
+            type="button"
+            onClick={onToggle}
+            className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-slate-50 transition-colors"
+        >
+            <div>
+                <h2 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h2>
+                {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
+            </div>
+            <svg
+                className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+        {open && <div className="px-6 pb-6 pt-5 border-t border-slate-100">{children}</div>}
+    </section>
+);
+
+const Field = ({ label, children }) => (
+    <div>
+        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
+        <dd className="mt-1 text-sm font-medium text-slate-900">{children}</dd>
+    </div>
+);
+
+const Badge = ({ tone = 'slate', dot = false, children }) => {
+    const tones = {
+        green: 'bg-green-50 border-green-200 text-green-700',
+        blue: 'bg-blue-50 border-blue-200 text-blue-700',
+        slate: 'bg-slate-50 border-slate-200 text-slate-600',
+    };
+    const dots = { green: 'bg-green-500', blue: 'bg-blue-500', slate: 'bg-slate-400' };
+    return (
+        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${tones[tone]}`}>
+            {dot && <span className={`h-1.5 w-1.5 rounded-full ${dots[tone]}`} />}
+            {children}
+        </span>
+    );
+};
+
+const BenefitStat = ({ label, total, remaining }) => {
+    const pct = total > 0 ? Math.max(0, Math.min(100, (remaining / total) * 100)) : 0;
+    return (
+        <div className="rounded-lg border border-slate-200 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+            <p className="mt-1.5 text-2xl font-semibold text-slate-900 tabular-nums">
+                {formatCurrency(remaining)}
+            </p>
+            <p className="mt-0.5 text-xs text-slate-500">remaining of {formatCurrency(total)}</p>
+            <div className="mt-3 h-1.5 rounded-full bg-slate-100">
+                <div className="h-1.5 rounded-full bg-blue-600" style={{ width: `${pct}%` }} />
+            </div>
+        </div>
+    );
+};
+
+const VerificationResults = ({ verificationResult }) => {
     const [sections, setSections] = useState({
         planInfo: true,
         benefits: true,
@@ -116,299 +96,162 @@ const VerificationResults = ({ verificationResult = mockVerificationData }) => {
 
     if (!verificationResult) return null;
 
-    return (
-        <div className="space-y-6">
-            {/* Basic Information */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 flex justify-between items-center border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-900">Plan Information</h2>
-                    </div>
-                    <button
-                        onClick={() => toggleSection('planInfo')}
-                        className="text-gray-600 hover:bg-white/70 rounded-xl p-2 w-9 h-9 flex items-center justify-center transition-all duration-150 font-bold text-lg"
-                    >
-                        {sections.planInfo ? '−' : '+'}
-                    </button>
-                </div>
-                {sections.planInfo && (
-                    <div className="p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
-                                <h3 className="font-semibold text-gray-700 text-sm mb-2">Status</h3>
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <p className="text-green-700 font-bold text-lg">
-                                        {verificationResult?.status || 'Unknown'}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
-                                <h3 className="font-semibold text-gray-700 text-sm mb-2">Network Status</h3>
-                                <p className="text-blue-700 font-bold text-lg">
-                                    {verificationResult?.network?.status || 'Unknown'}
-                                </p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                                <h3 className="font-semibold text-gray-700 text-sm mb-2">Plan Type</h3>
-                                <p className="text-gray-900 font-semibold text-lg">{verificationResult?.network?.type || 'Unknown'}</p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                                <h3 className="font-semibold text-gray-700 text-sm mb-2">Plan Year</h3>
-                                <p className="text-gray-900 font-semibold text-lg">{verificationResult?.planDetails?.planYear || 'Unknown'}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+    const { benefits, endodonticCoverage, history, network, planDetails, warnings } = verificationResult;
+    const basic = endodonticCoverage?.basic;
 
+    return (
+        <div className="space-y-4">
             {/* Warnings */}
-            {verificationResult?.warnings?.map((warning, index) => (
-                <div key={index} className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl p-5 shadow-md">
-                    <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0">
-                            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
+            {warnings?.length > 0 && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
+                    <div className="flex gap-3">
+                        <svg className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
                         <div>
-                            <h3 className="font-bold text-red-900 mb-1">Important Notice</h3>
-                            <p className="text-red-800">{warning}</p>
+                            <h3 className="text-sm font-semibold text-amber-900">Review before treatment</h3>
+                            <ul className="mt-1.5 space-y-1 text-sm text-amber-800 list-disc list-inside">
+                                {warnings.map((warning, index) => (
+                                    <li key={index}>{warning}</li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 </div>
-            ))}
+            )}
+
+            {/* Plan Information */}
+            <Section
+                title="Plan information"
+                subtitle={planDetails?.planName}
+                open={sections.planInfo}
+                onToggle={() => toggleSection('planInfo')}
+            >
+                <div className="flex flex-wrap items-center gap-2 mb-5">
+                    <Badge tone="green" dot>{titleCase(verificationResult.status) || 'Unknown'}</Badge>
+                    <Badge tone="blue">{titleCase(network?.status) || 'Unknown network status'}</Badge>
+                    {network?.type && <Badge>{network.type}</Badge>}
+                </div>
+                <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-5">
+                    <Field label="Group number">{planDetails?.group || '—'}</Field>
+                    <Field label="Plan year">{planDetails?.planYear || '—'}</Field>
+                    <Field label="Effective">{formatDate(verificationResult.effectiveDate)}</Field>
+                    <Field label="Terminates">{formatDate(verificationResult.terminationDate)}</Field>
+                </dl>
+            </Section>
+
             {/* Benefits */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-5 flex justify-between items-center border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-900">Benefits & Maximums</h2>
-                    </div>
-                    <button
-                        onClick={() => toggleSection('benefits')}
-                        className="text-gray-600 hover:bg-white/70 rounded-xl p-2 w-9 h-9 flex items-center justify-center transition-all duration-150 font-bold text-lg"
-                    >
-                        {sections.benefits ? '−' : '+'}
-                    </button>
+            <Section
+                title="Benefits & maximums"
+                open={sections.benefits}
+                onToggle={() => toggleSection('benefits')}
+            >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <BenefitStat
+                        label="Individual deductible"
+                        total={benefits?.deductible?.individual ?? 0}
+                        remaining={benefits?.deductible?.remaining ?? 0}
+                    />
+                    <BenefitStat
+                        label="Annual maximum"
+                        total={benefits?.maximums?.annual ?? 0}
+                        remaining={benefits?.maximums?.remaining ?? 0}
+                    />
                 </div>
-                {sections.benefits && (
-                    <div className="p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
-                                <h3 className="font-bold text-gray-800 mb-3 flex items-center space-x-2">
-                                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>Individual Deductible</span>
-                                </h3>
-                                <p className="text-3xl font-bold text-amber-700 mb-2">
-                                    ${verificationResult?.benefits?.deductible?.individual || 0}
-                                </p>
-                                <div className="flex items-center space-x-2 text-sm">
-                                    <span className="text-gray-600">Remaining:</span>
-                                    <span className="font-semibold text-amber-800">${verificationResult?.benefits?.deductible?.remaining || 0}</span>
-                                </div>
-                            </div>
-                            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
-                                <h3 className="font-bold text-gray-800 mb-3 flex items-center space-x-2">
-                                    <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                    </svg>
-                                    <span>Annual Maximum</span>
-                                </h3>
-                                <p className="text-3xl font-bold text-emerald-700 mb-2">
-                                    ${verificationResult?.benefits?.maximums?.annual || 0}
-                                </p>
-                                <div className="flex items-center space-x-2 text-sm">
-                                    <span className="text-gray-600">Remaining:</span>
-                                    <span className="font-semibold text-emerald-800">${verificationResult?.benefits?.maximums?.remaining || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+            </Section>
 
             {/* Endodontic Coverage */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-5 flex justify-between items-center border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-900">Endodontic Coverage</h2>
-                    </div>
-                    <button
-                        onClick={() => toggleSection('endodontic')}
-                        className="text-gray-600 hover:bg-white/70 rounded-xl p-2 w-9 h-9 flex items-center justify-center transition-all duration-150 font-bold text-lg"
-                    >
-                        {sections.endodontic ? '−' : '+'}
-                    </button>
-                </div>
-                {sections.endodontic && verificationResult?.endodonticCoverage && (
-                    <div className="p-6">
-                        <div className="space-y-6">
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200">
-                                <h3 className="font-bold text-gray-800 mb-3 flex items-center space-x-2">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                    </svg>
-                                    <span>Basic Endodontic Coverage</span>
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-gray-600">Coverage:</span>
-                                        <span className="font-bold text-blue-700">{verificationResult?.endodonticCoverage?.basic?.coverage || 'Unknown'}</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-gray-600">Deductible Applies:</span>
-                                        <span className="font-semibold text-gray-900">{verificationResult?.endodonticCoverage?.basic?.deductible_applies ? 'Yes' : 'No'}</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-gray-600">Waiting Period:</span>
-                                        <span className="font-semibold text-gray-900">{verificationResult?.endodonticCoverage?.basic?.waiting_period || 'Unknown'}</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-gray-600">Frequency:</span>
-                                        <span className="font-semibold text-gray-900">{verificationResult?.endodonticCoverage?.basic?.frequency || 'Unknown'}</span>
-                                    </div>
-                                </div>
-                            </div>
+            {endodonticCoverage && (
+                <Section
+                    title="Endodontic coverage"
+                    open={sections.endodontic}
+                    onToggle={() => toggleSection('endodontic')}
+                >
+                    <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-5 mb-6">
+                        <Field label="Coverage">{basic?.coverage || '—'}</Field>
+                        <Field label="Deductible applies">{basic?.deductible_applies ? 'Yes' : 'No'}</Field>
+                        <Field label="Waiting period">{basic?.waiting_period || '—'}</Field>
+                        <Field label="Frequency">{basic?.frequency || '—'}</Field>
+                    </dl>
 
-                            <div>
-                                <h3 className="font-bold text-gray-800 mb-4 text-lg">Procedure Coverage</h3>
-                                <div className="grid gap-4">
-                                    {Object.entries(verificationResult?.endodonticCoverage?.procedures || {}).map(([code, info]) => (
-                                        <div key={code} className="bg-gradient-to-br from-gray-50 to-slate-50 p-5 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-150">
-                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                                                <div className="flex-1">
-                                                    <p className="font-bold text-gray-900 text-lg mb-2">{info.name}</p>
-                                                    <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">{code}</span>
-                                                    <div className="flex flex-wrap gap-4 text-sm">
-                                                        <div className="flex items-center space-x-2">
-                                                            <span className="text-gray-600">Coverage:</span>
-                                                            <span className="font-bold text-green-600">{info.coverage}</span>
-                                                        </div>
-                                                        <div className="flex items-center space-x-2">
-                                                            <span className="text-gray-600">Patient Portion:</span>
-                                                            <span className="font-bold text-amber-600">{info.patient_portion}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {info.restrictions && info.restrictions !== 'None' && (
-                                                    <div className="bg-amber-100 border border-amber-300 rounded-lg px-3 py-2 text-sm">
-                                                        <p className="font-semibold text-amber-800">Note:</p>
-                                                        <p className="text-amber-700">{info.restrictions}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                    <div className="overflow-x-auto -mx-6 px-6">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-slate-200 text-left">
+                                    <th className="py-2 pr-4 text-xs font-medium uppercase tracking-wide text-slate-500">Code</th>
+                                    <th className="py-2 pr-4 text-xs font-medium uppercase tracking-wide text-slate-500">Procedure</th>
+                                    <th className="py-2 pr-4 text-xs font-medium uppercase tracking-wide text-slate-500 text-right">Coverage</th>
+                                    <th className="py-2 pr-4 text-xs font-medium uppercase tracking-wide text-slate-500 text-right">Patient pays</th>
+                                    <th className="py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Limitations</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {Object.entries(endodonticCoverage.procedures || {}).map(([code, info]) => (
+                                    <tr key={code}>
+                                        <td className="py-2.5 pr-4 font-mono text-xs text-slate-500">{code}</td>
+                                        <td className="py-2.5 pr-4 font-medium text-slate-900">{info.name}</td>
+                                        <td className="py-2.5 pr-4 text-right tabular-nums text-slate-700">{info.coverage}</td>
+                                        <td className="py-2.5 pr-4 text-right tabular-nums text-slate-700">{info.patient_portion}</td>
+                                        <td className="py-2.5 text-slate-500">
+                                            {info.restrictions && info.restrictions !== 'None' ? (
+                                                <span className="text-amber-700">{info.restrictions}</span>
+                                            ) : (
+                                                '—'
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                )}
-            </div>
+                </Section>
+            )}
+
             {/* Treatment History */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 flex justify-between items-center border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-900">Treatment History</h2>
+            {history?.tooth_history && (
+                <Section
+                    title="Treatment history"
+                    open={sections.history}
+                    onToggle={() => toggleSection('history')}
+                >
+                    <div className="overflow-x-auto -mx-6 px-6">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-slate-200 text-left">
+                                    <th className="py-2 pr-4 text-xs font-medium uppercase tracking-wide text-slate-500">Tooth</th>
+                                    <th className="py-2 pr-4 text-xs font-medium uppercase tracking-wide text-slate-500">Procedure</th>
+                                    <th className="py-2 pr-4 text-xs font-medium uppercase tracking-wide text-slate-500">Date</th>
+                                    <th className="py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Provider</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {Object.entries(history.tooth_history).map(([tooth, info]) => (
+                                    <tr key={tooth}>
+                                        <td className="py-2.5 pr-4 font-medium text-slate-900">#{tooth}</td>
+                                        <td className="py-2.5 pr-4 font-mono text-xs text-slate-500">{info.procedure}</td>
+                                        <td className="py-2.5 pr-4 text-slate-700">{formatDate(info.date)}</td>
+                                        <td className="py-2.5 text-slate-700">{info.provider}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                    <button
-                        onClick={() => toggleSection('history')}
-                        className="text-gray-600 hover:bg-white/70 rounded-xl p-2 w-9 h-9 flex items-center justify-center transition-all duration-150 font-bold text-lg"
-                    >
-                        {sections.history ? '−' : '+'}
-                    </button>
-                </div>
-                {sections.history && verificationResult?.history?.tooth_history && (
-                    <div className="p-6">
-                        <div className="space-y-4">
-                            {Object.entries(verificationResult.history.tooth_history).map(([tooth, info]) => (
-                                <div key={tooth} className="bg-gradient-to-br from-gray-50 to-slate-50 p-5 rounded-xl border border-gray-200 hover:border-green-300 hover:shadow-md transition-all duration-150">
-                                    <div className="flex items-start space-x-4">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                                            <span className="text-white font-bold text-lg">{tooth}</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-gray-900 text-lg mb-2">Tooth {tooth}</p>
-                                            <div className="space-y-1 text-sm">
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-gray-600">Procedure:</span>
-                                                    <span className="font-semibold text-gray-900 bg-blue-100 px-2 py-1 rounded">{info.procedure}</span>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-gray-600">Date:</span>
-                                                    <span className="font-semibold text-gray-900">{new Date(info.date).toLocaleDateString()}</span>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-gray-600">Provider:</span>
-                                                    <span className="font-semibold text-gray-900">{info.provider}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
+                </Section>
+            )}
 
             {/* Cost Calculator */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-5 flex justify-between items-center border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-bold text-gray-900">Cost Calculator</h2>
-                    </div>
-                    <button
-                        onClick={() => toggleSection('calculator')}
-                        className="text-gray-600 hover:bg-white/70 rounded-xl p-2 w-9 h-9 flex items-center justify-center transition-all duration-150 font-bold text-lg"
-                    >
-                        {sections.calculator ? '−' : '+'}
-                    </button>
-                </div>
-                {sections.calculator && (
-                    <div className="p-6">
-                        <CostCalculator insuranceData={verificationResult} />
-                    </div>
-                )}
-            </div>
+            <Section
+                title="Cost estimate"
+                subtitle="Select planned procedures to estimate the patient's out-of-pocket cost"
+                open={sections.calculator}
+                onToggle={() => toggleSection('calculator')}
+            >
+                <CostCalculator insuranceData={verificationResult} />
+            </Section>
 
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 bg-gray-50 rounded-xl py-3 px-4 border border-gray-200">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Last verified: {
-                    verificationResult?.history?.lastVerification ?
-                    new Date(verificationResult.history.lastVerification).toLocaleString() :
-                    'Unknown'
-                }</span>
-            </div>
+            <p className="text-center text-xs text-slate-400">
+                Last verified {history?.lastVerification ? new Date(history.lastVerification).toLocaleString() : '—'}
+            </p>
         </div>
     );
 };
