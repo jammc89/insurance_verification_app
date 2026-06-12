@@ -3,102 +3,6 @@
 import React, { useState } from 'react';
 import VerificationResults from '../components/VerificationResults';
 
-// Mock data moved here so we can use it in form submission
-const mockVerificationData = {
-    status: 'ACTIVE',
-    effectiveDate: '2024-01-01',
-    terminationDate: '2024-12-31',
-    network: {
-        status: 'IN-NETWORK',
-        type: 'PPO',
-        networkName: 'Premium Dental Network'
-    },
-    planDetails: {
-        planName: 'Premium Dental PPO',
-        group: '12345-001',
-        planYear: 'Calendar Year',
-        claimAddress: 'PO Box 12345, Some City, ST 12345'
-    },
-    benefits: {
-        deductible: {
-            individual: 50,
-            family: 150,
-            remaining: 50,
-            applies_to_treatment: true
-        },
-        maximums: {
-            annual: 1500,
-            remaining: 1500,
-            orthodontic_lifetime: 1000
-        },
-        preventive: {
-            coverage: '100%',
-            deductible_applies: false,
-            waiting_period: 'None'
-        }
-    },
-    endodonticCoverage: {
-        basic: {
-            coverage: '80%',
-            deductible_applies: true,
-            waiting_period: 'None',
-            frequency: 'Once per tooth per lifetime'
-        },
-        procedures: {
-            'D3310': {
-                name: 'Anterior Root Canal',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: 'None'
-            },
-            'D3320': {
-                name: 'Premolar Root Canal',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: 'None'
-            },
-            'D3330': {
-                name: 'Molar Root Canal',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: 'None'
-            },
-            'D3346': {
-                name: 'Retreatment - Anterior',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: '2 years after initial treatment'
-            },
-            'D3347': {
-                name: 'Retreatment - Premolar',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: '2 years after initial treatment'
-            },
-            'D3348': {
-                name: 'Retreatment - Molar',
-                coverage: '80%',
-                patient_portion: '20%',
-                restrictions: '2 years after initial treatment'
-            }
-        }
-    },
-    history: {
-        lastVerification: new Date().toISOString(),
-        tooth_history: {
-            '18': {
-                date: '2023-06-15',
-                procedure: 'D3330',
-                provider: 'Dr. Smith'
-            }
-        }
-    },
-    warnings: [
-        'Tooth 18 had previous root canal treatment in 2023',
-        'Retreatment waiting period applies'
-    ]
-};
-
 const fields = [
   { name: 'firstName', label: 'First name', placeholder: 'Jane', required: true },
   { name: 'lastName', label: 'Last name', placeholder: 'Doe', required: true },
@@ -120,6 +24,7 @@ export const InsuranceVerificationApp = () => {
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     setPatientInfo({
@@ -131,14 +36,25 @@ export const InsuranceVerificationApp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsVerifying(true);
+    setError(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setVerificationResult(mockVerificationData); // Use mock data
-    } catch (error) {
-      console.error('Verification failed:', error);
-      setVerificationResult({ error: 'Verification failed. Please try again.' });
+      const response = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patientInfo),
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Verification failed. Please try again.');
+      }
+
+      setVerificationResult(data);
+    } catch (err) {
+      console.error('Verification failed:', err);
+      setVerificationResult(null);
+      setError(err.message || 'Verification failed. Please try again.');
     } finally {
       setIsVerifying(false);
     }
@@ -194,8 +110,21 @@ export const InsuranceVerificationApp = () => {
         </form>
       </div>
 
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       {verificationResult && (
-        <VerificationResults verificationResult={verificationResult} />
+        <div className="space-y-2">
+          {verificationResult.meta?.source === 'mock' && (
+            <p className="text-right text-xs text-slate-400">
+              Demo data — set STEDI_API_KEY to run live eligibility checks
+            </p>
+          )}
+          <VerificationResults verificationResult={verificationResult} />
+        </div>
       )}
     </div>
   );
